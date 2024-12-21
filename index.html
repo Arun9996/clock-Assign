@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rolex-Style Analog Clock</title>
+  <style>
+    /* General body styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Container styling */
+    .container {
+      text-align: center;
+      padding: 30px;
+      border: 2px solid #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(135deg, #1c1c1c, #444);
+      width: 400px;
+    }
+
+    /* Clock styling */
+    .clock {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 10px solid #fff;
+      border-radius: 50%;
+      background: radial-gradient(circle, #1c1c1c, #444, #000);
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Center point */
+    .clock .center {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: #f8c471;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+
+    /* Clock hands */
+    .hand {
+      position: absolute;
+      width: 50%;
+      height: 4px;
+      background: #fff;
+      top: 50%;
+      transform-origin: 100%;
+      transform: rotate(90deg);
+      transition: all 0.05s ease-in-out;
+      z-index: 5;
+    }
+
+    .hour-hand {
+      width: 35%;
+      height: 6px;
+      background: #fff;
+    }
+
+    .minute-hand {
+      width: 45%;
+      height: 4px;
+      background: #28a745;
+    }
+
+    .second-hand {
+      width: 50%;
+      height: 2px;
+      background: #dc3545;
+    }
+
+    /* Numbers on the dial */
+    .number {
+      position: absolute;
+      font-size: 1.5rem;
+      color: #f8f8f8;
+      font-weight: bold;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Button container styling */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* Button styling */
+    .btn {
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .start {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .start:hover {
+      background-color: #218838;
+    }
+
+    .stop {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .stop:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="clock">
+      <div class="center"></div>
+      <div class="hand hour-hand" id="hourHand"></div>
+      <div class="hand minute-hand" id="minuteHand"></div>
+      <div class="hand second-hand" id="secondHand"></div>
+      
+      <!-- Numbers on the dial -->
+      <div class="number" style="top: 10%; left: 50%; transform: translate(-50%, -50%);">12</div>
+      <div class="number" style="top: 22%; left: 78%; transform: translate(-50%, -50%);">1</div>
+      <div class="number" style="top: 38%; left: 90%; transform: translate(-50%, -50%);">2</div>
+      <div class="number" style="top: 50%; left: 94%; transform: translate(-50%, -50%);">3</div>
+      <div class="number" style="top: 62%; left: 90%; transform: translate(-50%, -50%);">4</div>
+      <div class="number" style="top: 78%; left: 78%; transform: translate(-50%, -50%);">5</div>
+      <div class="number" style="top: 90%; left: 50%; transform: translate(-50%, -50%);">6</div>
+      <div class="number" style="top: 78%; left: 22%; transform: translate(-50%, -50%);">7</div>
+      <div class="number" style="top: 62%; left: 10%; transform: translate(-50%, -50%);">8</div>
+      <div class="number" style="top: 50%; left: 6%; transform: translate(-50%, -50%);">9</div>
+      <div class="number" style="top: 38%; left: 10%; transform: translate(-50%, -50%);">10</div>
+      <div class="number" style="top: 22%; left: 22%; transform: translate(-50%, -50%);">11</div>
+    </div>
+    <div class="buttons">
+      <button id="start" class="btn start">Start Clock</button>
+      <button id="stop" class="btn stop">Stop Clock</button>
+    </div>
+  </div>
+
+  <script>
+    // Get clock hands
+    const hourHand = document.getElementById("hourHand");
+    const minuteHand = document.getElementById("minuteHand");
+    const secondHand = document.getElementById("secondHand");
+
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+
+    let clockInterval; // To store the setInterval reference
+
+    // Function to update the clock hands
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours() % 12; // 12-hour format
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+
+      // Calculate hand rotations
+      const hourRotation = (360 / 12) * hours + (30 / 60) * minutes; // 360° / 12 hours + adjustment for minutes
+      const minuteRotation = (360 / 60) * minutes + (6 / 60) * seconds; // 360° / 60 minutes + adjustment for seconds
+      const secondRotation = (360 / 60) * seconds; // 360° / 60 seconds
+
+      // Apply rotations
+      hourHand.style.transform = `rotate(${hourRotation}deg)`;
+      minuteHand.style.transform = `rotate(${minuteRotation}deg)`;
+      secondHand.style.transform = `rotate(${secondRotation}deg)`;
+    }
+
+    // Start the clock
+    startButton.addEventListener("click", () => {
+      if (!clockInterval) {
+        updateClock(); // Ensure the clock starts immediately
+        clockInterval = setInterval(updateClock, 1000); // Update every second
+      }
+    });
+
+    // Stop the clock
+    stopButton.addEventListener("click", () => {
+      clearInterval(clockInterval); // Stop the clock
+      clockInterval = null; // Reset the interval reference
+    });
+  </script>
+</body>
+</html>
